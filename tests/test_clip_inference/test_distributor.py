@@ -41,6 +41,7 @@ def test_distributor(distributor_kind):
                 enable_image=True,
                 enable_text=False,
                 enable_metadata=False,
+                enable_inverted=False,
                 use_mclip=False,
                 clip_model="ViT-B/32",
                 use_jit=True,
@@ -59,6 +60,7 @@ def test_distributor(distributor_kind):
                 output_folder=tmpdir,
                 enable_text=False,
                 enable_image=True,
+                enable_inverted=False,
                 enable_metadata=False,
                 output_partition_count=output_partition_count,
             )

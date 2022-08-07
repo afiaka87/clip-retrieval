@@ -22,6 +22,7 @@ def main(
     num_prepro_workers=8,
     enable_text=True,
     enable_image=True,
+    enable_inverted=False,
     enable_metadata=False,
     write_batch_size=10**6,
     wds_image_key="jpg",
@@ -101,6 +102,7 @@ def main(
         return ClipMapper(
             enable_image=enable_image,
             enable_text=enable_text,
+            enable_inverted=enable_inverted,
             enable_metadata=enable_metadata,
             use_mclip=use_mclip,
             clip_model=clip_model,
@@ -114,6 +116,7 @@ def main(
             output_folder=output_folder,
             enable_text=enable_text,
             enable_image=enable_image,
+            enable_inverted=enable_inverted,
             enable_metadata=enable_metadata,
             output_partition_count=output_partition_count,
         )
