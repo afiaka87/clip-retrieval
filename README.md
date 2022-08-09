@@ -160,6 +160,7 @@ clip_inference turn a set of text+image into clip embeddings
 * **batch_size** Number of items to do the inference on at once (default *256*)
 * **num_prepro_workers** Number of processes to do the preprocessing (default *8*)
 * **enable_text** Enable text processing (default *True*)
+* **enable_inverted** (experimental) Generate image embeddings from text embeddings with a CLIP conditioned-prior. See also - `prior_model` (default *False*)
 * **enable_image** Enable image processing (default *True*)
 * **enable_metadata** Enable metadata processing (default *False*)
 * **write_batch_size** Write batch size (default *10**6*)
@@ -167,6 +168,7 @@ clip_inference turn a set of text+image into clip embeddings
 * **wds_caption_key** Key to use for captions in webdataset. (default *txt*)
 * **clip_model** CLIP model to load (default *ViT-B/32*). Specify it as `"open_clip:ViT-B-32-quickgelu"` to use the [open_clip](https://github.com/mlfoundations/open_clip).
 * **mclip_model** MCLIP model to load (default *sentence-transformers/clip-ViT-B-32-multilingual-v1*)
+* **unclip_model** Checkpoint to use for CLIP conditioned prior if using `enable_inverted`.
 * **use_mclip** If False it performs the inference using CLIP; MCLIP otherwise (default *False*)
 * **use_jit** uses jit for the clip model (default *True*)
 * **distribution_strategy** choose how to distribute the job, see distribution section for details (default *sequential*)
