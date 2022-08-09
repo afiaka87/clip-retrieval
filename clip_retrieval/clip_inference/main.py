@@ -29,6 +29,7 @@ def main(
     wds_caption_key="txt",
     clip_model="ViT-B/32",
     mclip_model="sentence-transformers/clip-ViT-B-32-multilingual-v1",
+    unclip_model="",
     use_mclip=False,
     use_jit=True,
     distribution_strategy="sequential",
@@ -108,6 +109,7 @@ def main(
             clip_model=clip_model,
             use_jit=use_jit,
             mclip_model=mclip_model,
+            unclip_model=unclip_model,
         )
 
     def writer_builder(i):

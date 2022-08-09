@@ -27,6 +27,7 @@ class ClipMapper:
         clip_model,
         use_jit,
         mclip_model,
+        unclip_model,
     ):
         self.enable_image = enable_image
         self.enable_text = enable_text
@@ -44,8 +45,9 @@ class ClipMapper:
                 clip_model == "ViT-L/14"
             ), "ViT-L/14 is the only supported model for inverted text"
             assert not use_mclip, "You cannot use mclip with inverted text"
+            assert len(unclip_model) > 0, "You must specify an unclip model when `enable_inverted` is True"
             prior_diffusion = load_prior(
-                model_path="prior_aes_finetune.pth", device=self.device
+                model_path=unclip_model, device=self.device
             )
             self.model_txt_inverted = prior_diffusion.sample
         else:
