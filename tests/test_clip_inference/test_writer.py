@@ -12,6 +12,7 @@ def test_writer():
             output_folder=tmpdir,
             enable_text=False,
             enable_image=True,
+            enable_inverted=False,
             enable_metadata=False,
             output_partition_count=1,
         )

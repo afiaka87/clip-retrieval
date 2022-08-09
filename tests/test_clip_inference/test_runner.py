@@ -38,10 +38,12 @@ def test_runner():
                 enable_image=True,
                 enable_text=False,
                 enable_metadata=False,
+                enable_inverted=False,
                 use_mclip=False,
                 clip_model="ViT-B/32",
                 use_jit=True,
                 mclip_model="",
+                unclip_model=None,
             )
 
         def logger_builder(i):
@@ -57,6 +59,7 @@ def test_runner():
                 enable_text=False,
                 enable_image=True,
                 enable_metadata=False,
+                enable_inverted=False,
                 output_partition_count=output_partition_count,
             )
 

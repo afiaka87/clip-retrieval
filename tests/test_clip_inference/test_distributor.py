@@ -46,6 +46,7 @@ def test_distributor(distributor_kind):
                 clip_model="ViT-B/32",
                 use_jit=True,
                 mclip_model="",
+                unclip_model=None,
             )
 
         def logger_builder(i):

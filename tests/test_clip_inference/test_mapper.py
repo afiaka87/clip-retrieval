@@ -12,10 +12,12 @@ def test_mapper(model):
         enable_image=True,
         enable_text=False,
         enable_metadata=False,
+        enable_inverted=False,
         use_mclip=False,
         clip_model=model,
         use_jit=True,
         mclip_model="",
+        unclip_model=None,
     )
     current_dir = os.path.dirname(os.path.abspath(__file__))
     tensor_files = [i for i in os.listdir(current_dir + "/test_tensors")]
