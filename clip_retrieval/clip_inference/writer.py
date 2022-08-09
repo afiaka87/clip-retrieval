@@ -160,7 +160,7 @@ class NumpyWriter:
         output_folder,
         enable_text,
         enable_image,
-        enable_inverted,
+        enable_unclip,
         enable_metadata,
         output_partition_count,
     ):
@@ -168,7 +168,7 @@ class NumpyWriter:
             output_folder,
             enable_text,
             enable_image,
-            enable_inverted,
+            enable_unclip,
             enable_metadata,
             partition_id,
             output_partition_count,

@@ -22,7 +22,7 @@ class ClipMapper:
         enable_image,
         enable_text,
         enable_metadata,
-        enable_inverted,
+        enable_unclip,
         use_mclip,
         clip_model,
         use_jit,
@@ -32,7 +32,7 @@ class ClipMapper:
         self.enable_image = enable_image
         self.enable_text = enable_text
         self.enable_metadata = enable_metadata
-        self.enable_inverted = enable_inverted
+        self.enable_inverted = enable_unclip
         self.use_mclip = use_mclip
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         model, _ = load_clip(clip_model, use_jit)

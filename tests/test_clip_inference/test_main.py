@@ -30,7 +30,7 @@ def test_main():
             enable_text=False,
             enable_image=True,
             enable_metadata=False,
-            enable_inverted=False,
+            enable_unclip=False,
             write_batch_size=4,
             wds_image_key="jpg",
             wds_caption_key="txt",

@@ -12,7 +12,7 @@ def test_mapper(model):
         enable_image=True,
         enable_text=False,
         enable_metadata=False,
-        enable_inverted=False,
+        enable_unclip=False,
         use_mclip=False,
         clip_model=model,
         use_jit=True,
