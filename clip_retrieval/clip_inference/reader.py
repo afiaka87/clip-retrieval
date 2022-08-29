@@ -5,6 +5,7 @@ from PIL import Image
 from torch.utils.data import DataLoader
 from torch.utils.data.dataloader import default_collate
 import io
+import gc
 
 
 def folder_to_keys(folder, enable_text=True, enable_image=True, enable_metadata=False):
@@ -26,7 +27,9 @@ def folder_to_keys(folder, enable_text=True, enable_image=True, enable_metadata=
         image_files = {image_file.stem: image_file for image_file in image_files}
     if enable_metadata:
         metadata_files = [*path.glob("**/*.json")]
-        metadata_files = {metadata_file.stem: metadata_file for metadata_file in metadata_files}
+        metadata_files = {
+            metadata_file.stem: metadata_file for metadata_file in metadata_files
+        }
 
     keys = None
     join = lambda new_set: new_set & keys if keys is not None else new_set
@@ -74,10 +77,14 @@ def get_image_dataset():
                 self.tokenizer = lambda text: clip.tokenize([text], truncate=True)[0]
                 self.text_files = {k: v for k, v in text_files.items() if k in keys_set}
             if self.enable_image:
-                self.image_files = {k: v for k, v in image_files.items() if k in keys_set}
+                self.image_files = {
+                    k: v for k, v in image_files.items() if k in keys_set
+                }
                 self.image_transform = preprocess
             if self.enable_metadata:
-                self.metadata_files = {k: v for k, v in metadata_files.items() if k in keys_set}
+                self.metadata_files = {
+                    k: v for k, v in metadata_files.items() if k in keys_set
+                }
 
         def __len__(self):
             return len(self.keys)
@@ -88,7 +95,8 @@ def get_image_dataset():
 
             if self.enable_image:
                 image_file = self.image_files[key]
-                image_tensor = self.image_transform(Image.open(image_file))
+                pil_image = Image.open(image_file).convert("RGB")
+                image_tensor = self.image_transform(pil_image)
                 output["image_filename"] = str(image_file)
                 output["image_tensor"] = image_tensor
 
@@ -126,7 +134,12 @@ def create_webdataset(
 
     urls = input_sampler(urls)
 
-    dataset = wds.WebDataset(urls, cache_dir=cache_path, cache_size=10**10, handler=wds.handlers.warn_and_continue)
+    dataset = wds.WebDataset(
+        urls,
+        cache_dir=cache_path,
+        cache_size=10**10,
+        handler=wds.handlers.warn_and_continue,
+    )
     tokenizer = lambda text: clip.tokenize([text], truncate=True)[0]
 
     def filter_dataset(item):
@@ -143,10 +156,10 @@ def create_webdataset(
     def preprocess_dataset(item):
         output = {}
         if enable_image:
+            output["image_filename"] = item["__key__"]
             image_data = item[image_key]
             image = Image.open(io.BytesIO(image_data))
             image_tensor = image_transform(image)
-            output["image_filename"] = item["__key__"]
             output["image_tensor"] = image_tensor
 
         if enable_text:
@@ -162,7 +175,9 @@ def create_webdataset(
             output["metadata"] = metadata
         return output
 
-    transformed_dataset = filtered_dataset.map(preprocess_dataset, handler=wds.handlers.warn_and_continue)
+    transformed_dataset = filtered_dataset.map(
+        preprocess_dataset, handler=wds.handlers.warn_and_continue
+    )
     return transformed_dataset
 
 
@@ -200,10 +215,20 @@ class FilesReader:
         enable_metadata=False,
     ) -> None:
         super().__init__()
-        dataset = get_image_dataset()(preprocess, input_dataset, enable_text, enable_image, enable_metadata, sampler)
-        self.dataloader = dataset_to_dataloader(dataset, batch_size, num_prepro_workers, "files")
+        dataset = get_image_dataset()(
+            preprocess=preprocess,
+            folder=input_dataset,
+            enable_text=enable_text,
+            enable_image=enable_image,
+            enable_metadata=enable_metadata,
+            input_sampler=sampler,
+        )
+        self.dataloader = dataset_to_dataloader(
+            dataset, batch_size, num_prepro_workers, "files"
+        )
 
     def __iter__(self):
+        gc.collect()  # TODO
         for batch in self.dataloader:
             yield batch
 
@@ -237,7 +262,9 @@ class WebdatasetReader:
             cache_path=cache_path,
             input_sampler=sampler,
         )
-        self.dataloader = dataset_to_dataloader(dataset, batch_size, num_prepro_workers, "webdataset")
+        self.dataloader = dataset_to_dataloader(
+            dataset, batch_size, num_prepro_workers, "webdataset"
+        )
 
     def __iter__(self):
         for batch in self.dataloader:

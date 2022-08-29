@@ -14,6 +14,7 @@ def test_writer():
             enable_image=True,
             enable_unclip=False,
             enable_metadata=False,
+            enable_vae=False,
             output_partition_count=1,
         )
         current_folder = os.path.dirname(__file__)

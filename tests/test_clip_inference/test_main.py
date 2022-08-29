@@ -29,6 +29,7 @@ def test_main():
             num_prepro_workers=8,
             enable_text=False,
             enable_image=True,
+            enable_vae=False,
             enable_metadata=False,
             enable_unclip=False,
             write_batch_size=4,

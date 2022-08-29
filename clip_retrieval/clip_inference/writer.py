@@ -3,6 +3,7 @@
 import json
 import math
 from io import BytesIO
+from pathlib import Path
 
 import fsspec
 
@@ -15,7 +16,8 @@ class OutputSink:
         output_folder,
         enable_text,
         enable_image,
-        enable_inverted,
+        enable_unclip,
+        enable_vae,
         enable_metadata,
         partition_id,
         output_partition_count,
@@ -23,12 +25,14 @@ class OutputSink:
         self.enable_text = enable_text
         self.enable_image = enable_image
         self.enable_metadata = enable_metadata
-        self.enable_inverted = enable_inverted
+        self.enable_unclip = enable_unclip
+        self.enable_vae = enable_vae
         self.fs, output_folder = fsspec.core.url_to_fs(output_folder)
         self.output_folder = output_folder
         self.img_emb_folder = output_folder + "/img_emb"
         self.text_emb_folder = output_folder + "/text_emb"
         self.inverted_emb_folder = output_folder + "/inverted_emb"
+        self.vae_emb_folder = output_folder + "/vae_emb"
         self.metadata_folder = output_folder + "/metadata"
         self.batch_num = partition_id
         self.oom_partition_count = int(math.log10(output_partition_count)) + 1
@@ -39,8 +43,11 @@ class OutputSink:
         if enable_text:
             self.fs.makedirs(self.text_emb_folder, exist_ok=True)
 
-        if enable_inverted:
+        if enable_unclip:
             self.fs.makedirs(self.inverted_emb_folder, exist_ok=True)
+
+        if enable_vae:
+            self.fs.makedirs(self.vae_emb_folder, exist_ok=True)
 
         self.fs.makedirs(self.metadata_folder, exist_ok=True)
 
@@ -51,7 +58,9 @@ class OutputSink:
         self.image_embeddings = []
         self.text_embeddings = []
         self.inverted_embeddings = []
+        self.vae_embeddings = []
         self.image_names = []
+        self.vae_image_names = []  # TODO is this needed?
         self.captions = []
         self.metadata = []
         self.batch_count = 0
@@ -66,13 +75,16 @@ class OutputSink:
             if self.enable_image
             else sample["text_embs"].shape[0]
         )
+        if self.enable_vae:
+            self.vae_embeddings.append(sample["vae_embs"])
+            self.vae_image_names = sample["image_filename"]
         if self.enable_image:
             self.image_embeddings.append(sample["image_embs"])
             self.image_names.extend(sample["image_filename"])
         if self.enable_text:
             self.captions.extend(sample["text"])
             self.text_embeddings.append(sample["text_embs"])
-        if self.enable_inverted:
+        if self.enable_unclip:
             self.inverted_embeddings.append(sample["inverted_embs"])
         if self.enable_metadata:
             self.metadata.extend(sample["metadata"])
@@ -111,7 +123,7 @@ class OutputSink:
             data_lists.append(self.captions)
             data_columns.append("caption")
 
-        if self.enable_inverted:
+        if self.enable_unclip:
             inverted_emb_mat = np.concatenate(self.inverted_embeddings)
             output_path_inverted = (
                 self.inverted_emb_folder + "/invert_emb_" + batch_num_str
@@ -122,8 +134,15 @@ class OutputSink:
                 np.save(npb, inverted_emb_mat)
                 f.write(npb.getbuffer())
 
-            data_lists.append(self.captions)
-            data_columns.append("caption")
+        if self.enable_vae:
+            vae_emb_mat = np.concatenate(self.vae_embeddings)
+            output_path_vae = self.vae_emb_folder + "/vae_emb_" + batch_num_str
+            with self.fs.open(output_path_vae + ".npy", "wb") as f:
+                npb = BytesIO()
+                np.save(npb, vae_emb_mat)
+                f.write(npb.getbuffer())
+            data_lists.append(self.vae_image_names)
+            data_columns.append("vae_image_path")
 
         if self.enable_metadata:
             data_lists.append(self.metadata)
@@ -161,6 +180,7 @@ class NumpyWriter:
         enable_text,
         enable_image,
         enable_unclip,
+        enable_vae,
         enable_metadata,
         output_partition_count,
     ):
@@ -169,6 +189,7 @@ class NumpyWriter:
             enable_text,
             enable_image,
             enable_unclip,
+            enable_vae,
             enable_metadata,
             partition_id,
             output_partition_count,

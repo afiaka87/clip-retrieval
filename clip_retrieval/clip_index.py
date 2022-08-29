@@ -2,27 +2,36 @@
 
 import fire
 import os
+from pathlib import Path
 from distutils.dir_util import copy_tree
+import numpy as np
 import logging
 
 
 LOGGER = logging.getLogger(__name__)
 
 
-def quantize(emb_folder, index_folder, index_name, max_index_memory_usage, current_memory_available, nb_cores):
+def quantize(
+    embeddings,
+    index_folder,
+    index_name,
+    max_index_memory_usage,
+    current_memory_available,
+    nb_cores,
+):
     """calls autofaiss to build an index"""
 
     from autofaiss import build_index  # pylint: disable=import-outside-toplevel
 
     try:
         LOGGER.debug(f"starting index {index_name}")
-        if os.path.exists(emb_folder):
+        if os.path.exists(embeddings) or isinstance(embeddings, np.ndarray):
             LOGGER.debug(
-                f"embedding path exist, building index {index_name}"
-                f"using embeddings {emb_folder} ; saving in {index_folder}"
+                f"embeddings found, building index {index_name}"
+                f"using embeddings; saving in {index_folder}"
             )
             build_index(
-                embeddings=emb_folder,
+                embeddings=embeddings,
                 index_path=index_folder + "/" + index_name + ".index",
                 index_infos_path=index_folder + "/" + index_name + ".json",
                 max_index_memory_usage=max_index_memory_usage,
@@ -54,6 +63,7 @@ def clip_index(
         current_memory_available,
         nb_cores,
     )
+    LOGGER.info(f"image embeddings indexed")
     quantize(
         embeddings_folder + "/" + text_subfolder,
         index_folder,
@@ -62,8 +72,11 @@ def clip_index(
         current_memory_available,
         nb_cores,
     )
+    LOGGER.info(f"text embeddings indexed")
+
     if copy_metadata:
         copy_tree(embeddings_folder + "/metadata", index_folder + "/metadata")
+        LOGGER.info(f"metadata copied")
 
 
 if __name__ == "__main__":
