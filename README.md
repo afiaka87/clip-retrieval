@@ -4,6 +4,61 @@ This is an experimental fork of `clip-retrieval` with the ability to encode imag
 
 Things may be under-documented or buggy. 
 
+## tl;dr
+
+### install
+
+```sh
+pip install git+https://github.com/afiaka87/clip-retrieval@unclip
+```
+
+### inference
+
+You may need a nice GPU, I have only tested it on an A100.
+
+```sh
+input_dataset="/path/to/images/"
+output_folder="./my_clip_embeddings"
+
+time clip-retrieval inference \
+    --input_format files \
+    --input_dataset $input_dataset \
+    --output_folder $output_folder \
+    --num_prepro_workers 12 \
+    --enable_unclip False \
+    --enable_text True \
+    --enable_image True \
+    --enable_metadata True \
+    --enable_vae True \
+    --batch_size 32 \
+    --clip_model "ViT-L/14" \
+    --vae_model "diffusers-cache/vae"
+```sh
+```
+
+#### faiss index
+
+Creates a quantized "faiss" (pronounced face) index to be used for retrieval over the embeddings you just generated. 
+
+Changing memory settings is _maybe_ only needed for datasets larger than 1M embeddings. But feel free to mess with it.
+
+Note that you must pass in the `output_folder` from the previous step as the `--embeddings_folder` here. You should also set `nb_cores` to the number of cores on your machine.
+
+```sh
+
+time clip-retrieval index \
+    --max_index_memory_usage=4G \
+    --current_memory_available=16G \
+    --embeddings_folder './my_clip_embeddings' \
+    --index_folder './my_clip_faiss_index' \
+    --copy_metadata True \
+    --nb_cores=4
+```
+
+# Original contents
+
+Everything below is the original README as it existed when this fork was created.
+
 [![pypi](https://img.shields.io/pypi/v/clip-retrieval.svg)](https://pypi.python.org/pypi/clip-retrieval)
 [![NPM version](https://badge.fury.io/js/clip-retrieval-front.svg)](http://badge.fury.io/js/clip-retrieval-front)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/rom1504/clip-retrieval/blob/master/notebook/clip-retrieval-getting-started.ipynb)
