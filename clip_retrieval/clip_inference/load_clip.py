@@ -16,6 +16,10 @@ from torchvision.transforms import (
 from torchvision.transforms import functional as torchvision_functional
 
 
+import numpy as np
+from PIL import Image as PILImage
+
+
 def clip_transform(clip_size) -> torch.Tensor:
     return Compose(
         [
@@ -29,12 +33,17 @@ def clip_transform(clip_size) -> torch.Tensor:
     )
 
 
+def preprocess_init_image(image: PILImage, width: int, height: int):
+    image = image.resize((width, height), resample=PILImage.LANCZOS)
+    image = np.array(image).astype(np.float32) / 255.0
+    image = image[None].transpose(0, 3, 1, 2)
+    image = torch.from_numpy(image)
+    return 2.0 * image - 1.0
+
+
 def vae_preprocess(image) -> torch.Tensor:
-    image_tensor = torchvision_functional.resize(
-        image, 512, interpolation=InterpolationMode.LANCZOS
-    )
-    image_tensor = torchvision_functional.center_crop(image_tensor, (512, 512))
-    image_tensor = torchvision_functional.to_tensor(image_tensor)
+    image_tensor = preprocess_init_image(image, 512, 512)
+    image_tensor = image_tensor.squeeze(0)
     return image_tensor
 
 
